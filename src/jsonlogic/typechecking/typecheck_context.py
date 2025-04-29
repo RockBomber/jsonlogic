@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List
 
 from jsonlogic.core import Operator
 from jsonlogic.resolving import resolve_json_schema
@@ -37,17 +37,17 @@ class TypecheckContext:
             See :class:`TypecheckSettings` for the available settings and default values.
     """
 
-    def __init__(self, root_data_schema: dict[str, Any], settings: TypecheckSettingsDict | None = None) -> None:
+    def __init__(self, root_data_schema: Dict[str, Any], settings: TypecheckSettingsDict | None = None) -> None:
         self.data_stack = DataStack(root_data_schema)
         self.settings = TypecheckSettings.from_dict(settings) if settings is not None else TypecheckSettings()
-        self.diagnostics: list[Diagnostic] = []
+        self.diagnostics: List[Diagnostic] = []
 
     @property
-    def current_schema(self) -> dict[str, Any]:
+    def current_schema(self) -> Dict[str, Any]:
         """The data JSON Schema in the current evaluation scope."""
         return self.data_stack.tail
 
-    def resolve_variable(self, reference: str) -> dict[str, Any]:
+    def resolve_variable(self, reference: str) -> Dict[str, Any]:
         parsed_reference, scope = self.settings.reference_parser(reference)
         schema = self.data_stack.get(scope)
         return resolve_json_schema(parsed_reference, schema)

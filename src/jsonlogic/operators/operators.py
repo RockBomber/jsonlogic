@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import operator
 from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, cast
+from typing import Any, Callable, ClassVar, List, Tuple, cast
 
 from jsonlogic._compat import Self
 from jsonlogic.core import JSONLogicSyntaxError, Operator
@@ -31,7 +31,7 @@ class Var(Operator):
     default_value: OperatorArgument | UnsetType = UNSET
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) not in {1, 2}:
             raise JSONLogicSyntaxError(f"{operator!r} expects one or two arguments, got {len(arguments)}")
 
@@ -97,7 +97,7 @@ class EqualityOperator(Operator):
     right: OperatorArgument
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) != 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects two arguments, got {len(arguments)}")
 
@@ -129,11 +129,11 @@ class NotEqual(EqualityOperator):
 
 @dataclass
 class If(Operator):
-    if_elses: list[tuple[OperatorArgument, OperatorArgument]]
+    if_elses: List[Tuple[OperatorArgument, OperatorArgument]]
     leading_else: OperatorArgument
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) <= 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects at least 3 arguments, got {len(arguments)}")
         if len(arguments) % 2 == 0:
@@ -171,7 +171,7 @@ class BinaryOperator(Operator):
     right: OperatorArgument
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) != 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects two arguments, got {len(arguments)}")
 
@@ -237,10 +237,10 @@ class Modulo(BinaryOperator):
 
 @dataclass
 class Multiply(Operator):
-    arguments: list[OperatorArgument]
+    arguments: List[OperatorArgument]
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if not len(arguments) >= 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects at least two arguments, got {len(arguments)}")
         return cls(operator=operator, arguments=arguments)
@@ -272,10 +272,10 @@ class Multiply(Operator):
 
 @dataclass
 class Plus(Operator):
-    arguments: list[OperatorArgument]
+    arguments: List[OperatorArgument]
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         # TODO Having a unary + is a bit useless, but we might not error here in the future
         if not len(arguments) >= 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects at least two arguments, got {len(arguments)}")
@@ -312,7 +312,7 @@ class Minus(Operator):
     right: OperatorArgument | UnsetType = UNSET
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) not in {1, 2}:
             raise JSONLogicSyntaxError(f"{operator!r} expects one or two arguments, got {len(arguments)}")
 
@@ -360,7 +360,7 @@ class Map(Operator):
     func: OperatorArgument
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         if len(arguments) != 2:
             raise JSONLogicSyntaxError(f"{operator!r} expects two arguments, got {len(arguments)}")
 
@@ -380,13 +380,13 @@ class Map(Operator):
 
         return ArrayType(func_type)
 
-    def evaluate(self, context: EvaluationContext) -> list[Any]:
+    def evaluate(self, context: EvaluationContext) -> List[Any]:
         vars_value = get_value(self.vars, context)
 
         # `vars_value` is already evaluated, and any required literal/variable cast is done.
         # Thus no data schema is passed to the data stack, and `EvaluationContext.resolve_variable`
         # will assume the bare value should be returned.
-        return_array: list[Any] = []
+        return_array: List[Any] = []
         for var in vars_value:
             with context.data_stack.push((var, None)):
                 return_array.append(get_value(self.func, context))

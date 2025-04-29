@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 import pytest
 
@@ -49,7 +49,7 @@ pointer_ref_parser = PointerReferenceParser()
         ),
     ],
 )
-def test_reference_parser(pointer_reference: str, dot_reference: str, expected: tuple[list[str], int]) -> None:
+def test_reference_parser(pointer_reference: str, dot_reference: str, expected: Tuple[List[str], int]) -> None:
     parsed_ref, scope = pointer_ref_parser(pointer_reference)
     assert (parsed_ref.segments, scope) == expected
 
@@ -64,7 +64,7 @@ def test_reference_parser(pointer_reference: str, dot_reference: str, expected: 
         ("//", (["", ""], 0)),
     ],
 )
-def test_pointer_reference(pointer_reference: str, expected: tuple[list[str], int]) -> None:
+def test_pointer_reference(pointer_reference: str, expected: Tuple[List[str], int]) -> None:
     """Pointer references are unambiguous, thus we can parse `"/"` as being `[""]`.
 
     Note that this is not possible with dot references, so this is tested separately.
@@ -100,7 +100,7 @@ def test_pointer_reference(pointer_reference: str, expected: tuple[list[str], in
         ),
     ],
 )
-def test_resolve_json_schema(schema: dict[str, Any], segments: list[str], expected: dict[str, Any]) -> None:
+def test_resolve_json_schema(schema: Dict[str, Any], segments: List[str], expected: Dict[str, Any]) -> None:
     assert resolve_json_schema(ParsedReference("", segments), schema) == expected
 
 
@@ -122,7 +122,7 @@ def test_resolve_json_schema(schema: dict[str, Any], segments: list[str], expect
         ({"type": "object", "properties": {"a": {"type": "string"}}}, ["a", ""]),
     ],
 )
-def test_resolve_json_schema_unresolvable(schema: dict[str, Any], segments: list[str]) -> None:
+def test_resolve_json_schema_unresolvable(schema: Dict[str, Any], segments: List[str]) -> None:
     with pytest.raises(Unresolvable):
         resolve_json_schema(ParsedReference("", segments), schema)
 
@@ -136,5 +136,5 @@ def test_resolve_json_schema_unresolvable(schema: dict[str, Any], segments: list
         ({"a": ["test0"]}, ["a", "0"], "test0"),
     ],
 )
-def test_resolve_data(data: JSON, segments: list[str], expected: JSON) -> None:
+def test_resolve_data(data: JSON, segments: List[str], expected: JSON) -> None:
     assert resolve_data(ParsedReference("", segments), data) == expected

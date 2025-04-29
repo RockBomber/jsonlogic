@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
-from jsonlogic._compat import TypeAlias
+from jsonlogic._compat import Literal, TypeAlias
 from jsonlogic.core import Operator
 
 DiagnosticType: TypeAlias = Literal["error", "warning", "information"]

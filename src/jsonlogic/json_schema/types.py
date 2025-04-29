@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, Generic, Literal, NoReturn, TypeVar, overload
+from typing import Callable, Generic, List, NoReturn, Set, Tuple, TypeVar, overload
 
-from jsonlogic._compat import Self, TypeAlias, TypeVarTuple, Unpack
+from jsonlogic._compat import Literal, Self, TypeAlias, TypeVarTuple, Unpack
 
 JSONSchemaPrimitiveTypeT = TypeVar(
     "JSONSchemaPrimitiveTypeT",
@@ -29,7 +29,7 @@ class UnsupportedOperation(Exception):
 
 
 def unpack_union(
-    func: Callable[[JSONSchemaTypeT, JSONSchemaPrimitiveType, BinaryOp], JSONSchemaType], /
+    func: Callable[[JSONSchemaTypeT, JSONSchemaPrimitiveType, BinaryOp], JSONSchemaType],
 ) -> Callable[[JSONSchemaTypeT, JSONSchemaType, BinaryOp], JSONSchemaType]:
     """A utility decorator to unpack types of :class:`UnionType` when calling :meth:`JSONSchemaType.binary_op`.
 
@@ -37,14 +37,14 @@ def unpack_union(
     will be recursively applied to the :meth:`~JSONSchemaType.binary_op` method.
     """
 
-    def wrapper(self: JSONSchemaTypeT, other: JSONSchemaType, op: BinaryOp) -> JSONSchemaType:
-        if not isinstance(other, UnionType):
-            assert isinstance(other, JSONSchemaPrimitiveType)
-            return func(self, other, op)
+    def wrapper(__self: JSONSchemaTypeT, __other: JSONSchemaType, __op: BinaryOp) -> JSONSchemaType:
+        if not isinstance(__other, UnionType):
+            assert isinstance(__other, JSONSchemaPrimitiveType)
+            return func(__self, __other, __op)
 
-        result_types: list[JSONSchemaType] = []
-        for typ in other.types:
-            result_types.append(func(self, typ, op))
+        result_types: List[JSONSchemaType] = []
+        for typ in __other.types:
+            result_types.append(func(__self, typ, __op))
 
         return UnionType(*result_types)
 
@@ -58,7 +58,7 @@ class JSONSchemaType(ABC):
         """The verbose name of the type to be used in diagnostic messages."""
 
     @abstractmethod
-    def binary_op(self, other: JSONSchemaType, op: BinaryOp, /) -> JSONSchemaType:
+    def binary_op(self, other: JSONSchemaType, op: BinaryOp) -> JSONSchemaType:
         """Get the resulting type of the binary operation with the other provided type.
 
         Args:
@@ -83,20 +83,20 @@ class JSONSchemaType(ABC):
         """
 
     @overload
-    def __or__(self, value: Self, /) -> Self: ...  # type: ignore
+    def __or__(self, value: Self) -> Self: ...  # type: ignore
 
     @overload
-    def __or__(self, value: JSONSchemaType, /) -> UnionType: ...
+    def __or__(self, value: JSONSchemaType) -> UnionType: ...
 
-    def __or__(self, value, /):  # type: ignore
+    def __or__(self, value):  # type: ignore
         return UnionType(self, value)
 
 
 class UnionType(JSONSchemaType):
-    types: set[JSONSchemaPrimitiveType]
+    types: Set[JSONSchemaPrimitiveType]
 
     @overload
-    def __new__(cls, type: JSONSchemaTypeT, /) -> JSONSchemaTypeT: ...
+    def __new__(cls, type: JSONSchemaTypeT) -> JSONSchemaTypeT: ...
 
     # In reality, this won't account for unknown subtypes (see https://github.com/python/mypy/issues/6559#issuecomment-864411598)
     @overload
@@ -137,7 +137,7 @@ class UnionType(JSONSchemaType):
         return f"union({', '.join(t.name for t in self.types)})"
 
     def binary_op(self, other: JSONSchemaType, op: BinaryOp) -> JSONSchemaType:
-        result_types: list[JSONSchemaType] = []
+        result_types: List[JSONSchemaType] = []
         for typ in self.types:
             if isinstance(other, UnionType):
                 result_types.extend(typ.binary_op(other_typ, op) for other_typ in other.types)
@@ -181,7 +181,7 @@ class TupleType(JSONSchemaPrimitiveType, Generic[Unpack[TupleTs]]):
     # Note: `*args` could be used for ease of use (TupleType(t1, t2, ...)).
     # However, it would require a hacky workaround (https://stackoverflow.com/a/58336722)
     # and type checkers complain about unpacked arguments matching a TypeVarTuple
-    tuple_types: tuple[Unpack[TupleTs]]
+    tuple_types: Tuple[Unpack[TupleTs]]
     """The types of the tuple."""
 
     @property

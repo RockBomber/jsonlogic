@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Type, TypeVar, overload
+from typing import Callable, Dict, Type, TypeVar, overload
 
 from ._compat import Self, TypeAlias
 from .core import Operator
@@ -11,14 +11,14 @@ from .core import Operator
 class AlreadyRegistered(Exception):
     """The provided ID is already registered."""
 
-    def __init__(self, operator_id: str, /) -> None:
+    def __init__(self, operator_id: str) -> None:
         self.operator_id = operator_id
 
 
 class UnkownOperator(Exception):
     """The provided ID does not exist in the registry."""
 
-    def __init__(self, operator_id: str, /) -> None:
+    def __init__(self, operator_id: str) -> None:
         self.operator_id = operator_id
 
 
@@ -45,7 +45,7 @@ class OperatorRegistry:
     """
 
     def __init__(self) -> None:
-        self._registry: dict[str, OperatorType] = {}
+        self._registry: Dict[str, OperatorType] = {}
 
     @overload
     def register(self, operator_id: str, *, force: bool = ...) -> Callable[[OperatorTypeT], OperatorTypeT]: ...
@@ -83,7 +83,7 @@ class OperatorRegistry:
 
         if operator_type is None:
 
-            def dec(operator_type: OperatorTypeT, /) -> OperatorTypeT:
+            def dec(operator_type: OperatorTypeT) -> OperatorTypeT:
                 return self.register(operator_id, operator_type)
 
             return dec
@@ -94,7 +94,7 @@ class OperatorRegistry:
         self._registry[operator_id] = operator_type
         return operator_type
 
-    def get(self, operator_id: str, /) -> OperatorType:
+    def get(self, operator_id: str) -> OperatorType:
         """Get the operator class corresponding to the ID.
 
         Args:
@@ -108,7 +108,7 @@ class OperatorRegistry:
         except KeyError:
             raise UnkownOperator(operator_id)  # noqa: B904
 
-    def remove(self, operator_id: str, /) -> None:
+    def remove(self, operator_id: str) -> None:
         """Remove the operator from the registry.
 
         Args:
@@ -117,7 +117,7 @@ class OperatorRegistry:
 
         self._registry.pop(operator_id, None)
 
-    def copy(self, *, extend: OperatorRegistry | dict[str, OperatorType] | None = None, force: bool = False) -> Self:
+    def copy(self, *, extend: OperatorRegistry | Dict[str, OperatorType] | None = None, force: bool = False) -> Self:
         """Create a new instance of the registry.
 
         Args:

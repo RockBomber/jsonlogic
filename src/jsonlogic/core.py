@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from ._compat import Self, TypeAlias
 from .json_schema.types import AnyType, JSONSchemaType
@@ -33,7 +33,7 @@ class Operator(ABC):
 
     @classmethod
     @abstractmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         """Return an instance of the operator from the list of provided arguments.
 
         Args:
@@ -55,13 +55,13 @@ class Operator(ABC):
 class JSONLogicSyntaxError(Exception):
     """A syntax error when building an operator tree from a :class:`JSONLogicExpression`."""
 
-    def __init__(self, message: str, /) -> None:
+    def __init__(self, message: str) -> None:
         self.message = message
 
 
-ExprArgument: TypeAlias = "JSONLogicPrimitive | JSONLogicExpression | list[ExprArgument]"
+ExprArgument: TypeAlias = "JSONLogicPrimitive | JSONLogicExpression | List[ExprArgument]"
 
-NormalizedExpression: TypeAlias = "dict[str, list[ExprArgument]]"
+NormalizedExpression: TypeAlias = "Dict[str, List[ExprArgument]]"
 
 
 @dataclass

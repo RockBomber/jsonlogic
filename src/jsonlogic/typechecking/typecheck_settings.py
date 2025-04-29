@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, TypedDict
+from typing import Any, Callable, Dict, Type
 
-from jsonlogic._compat import Self
+from jsonlogic._compat import Self, TypedDict
 from jsonlogic.json_schema.types import DatetimeType, DateType, JSONSchemaType
 from jsonlogic.resolving import PointerReferenceParser, ReferenceParser
 
 from .diagnostics import DiagnosticType
 
 
-def _d_variable_casts() -> dict[str, type[JSONSchemaType]]:
+def _d_variable_casts() -> Dict[str, Type[JSONSchemaType]]:
     return {
         "date": DateType,
         "date-time": DatetimeType,
@@ -60,7 +60,7 @@ class TypecheckSettings:
     Default: :class:`~jsonlogic.resolving.PointerReferenceParser`.
     """
 
-    variable_casts: dict[str, type[JSONSchemaType]] = field(default_factory=_d_variable_casts)
+    variable_casts: Dict[str, Type[JSONSchemaType]] = field(default_factory=_d_variable_casts)
     """A mapping between `JSON Schema formats`_ and their corresponding
     :class:`~jsonlogic.json_schema.types.JSONSchemaType`.
 
@@ -77,7 +77,7 @@ class TypecheckSettings:
     .. _JSON Schema formats: https://json-schema.org/understanding-json-schema/reference/string#built-in-formats
     """
 
-    literal_casts: dict[Callable[[str], Any], type[JSONSchemaType]] = field(default_factory=dict)
+    literal_casts: Dict[Callable[[str], Any], Type[JSONSchemaType]] = field(default_factory=dict)
     """A mapping between conversion callables and their corresponding
     :class:`~jsonlogic.json_schema.types.JSONSchemaType`.
 
@@ -107,8 +107,8 @@ class TypecheckSettings:
     """
 
     @classmethod
-    def from_dict(cls, dct: TypecheckSettingsDict, /) -> Self:
-        init_dct: dict[str, Any] = {}
+    def from_dict(cls, dct: TypecheckSettingsDict) -> Self:
+        init_dct: Dict[str, Any] = {}
         if (reference_parser := dct.get("reference_parser")) is not None:
             init_dct["reference_parser"] = reference_parser
 
@@ -165,7 +165,7 @@ class TypecheckSettingsDict(TypedDict, total=False):
     Default: :class:`~jsonlogic.resolving.PointerReferenceParser`.
     """
 
-    variable_casts: dict[str, type[JSONSchemaType]]
+    variable_casts: Dict[str, Type[JSONSchemaType]]
     """A mapping between `JSON Schema formats`_ and their corresponding
     :class:`~jsonlogic.json_schema.types.JSONSchemaType`.
 
@@ -182,7 +182,7 @@ class TypecheckSettingsDict(TypedDict, total=False):
     .. _JSON Schema formats: https://json-schema.org/understanding-json-schema/reference/string#built-in-formats
     """
 
-    literal_casts: dict[Callable[[str], Any], type[JSONSchemaType]]
+    literal_casts: Dict[Callable[[str], Any], Type[JSONSchemaType]]
     """A mapping between conversion callables and their corresponding
     :class:`~jsonlogic.json_schema.types.JSONSchemaType`.
 

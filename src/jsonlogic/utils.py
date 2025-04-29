@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import enum
 from contextlib import contextmanager
-from typing import Generic, Iterator, Literal, TypeVar
+from typing import Generic, Iterator, TypeVar
 
-from ._compat import TypeAlias
+from ._compat import Literal, TypeAlias
 
 
 class _UnsetTypeEnum(enum.Enum):

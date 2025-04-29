@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Literal, overload
+from typing import Any, Dict, overload
 
+from jsonlogic._compat import Literal
 from jsonlogic.json_schema import cast_from_schema
 from jsonlogic.resolving import resolve_data, resolve_json_schema
 from jsonlogic.typing import JSON
@@ -41,7 +42,7 @@ class EvaluationContext:
     """
 
     def __init__(
-        self, root_data: JSON, data_schema: dict[str, Any] | None = None, settings: EvaluationSettingsDict | None = None
+        self, root_data: JSON, data_schema: Dict[str, Any] | None = None, settings: EvaluationSettingsDict | None = None
     ) -> None:
         self.data_stack = DataStack((root_data, data_schema))
         self.settings = EvaluationSettings.from_dict(settings) if settings is not None else EvaluationSettings()

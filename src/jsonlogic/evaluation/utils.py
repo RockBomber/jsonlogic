@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List
 
 from jsonlogic.core import Operator
 from jsonlogic.typing import JSON, JSONLogicPrimitive, OperatorArgument
@@ -10,7 +10,7 @@ from .evaluation_settings import EvaluationSettingsDict
 
 
 def evaluate(
-    operator: Operator, data: JSON, data_schema: dict[str, Any] | None, settings: EvaluationSettingsDict | None = None
+    operator: Operator, data: JSON, data_schema: Dict[str, Any] | None, settings: EvaluationSettingsDict | None = None
 ) -> Any:
     """Helper function to evaluate an :class:`~jsonlogic.core.Operator`.
 
@@ -29,7 +29,7 @@ def evaluate(
 
 
 # Function analogous to :func:`jsonlogic.json_schema.from_value`
-def _cast_value(value: JSONLogicPrimitive, literal_casts: list[Callable[[str], Any]]) -> Any:
+def _cast_value(value: JSONLogicPrimitive, literal_casts: List[Callable[[str], Any]]) -> Any:
     if isinstance(value, str):
         for func in literal_casts:
             try:

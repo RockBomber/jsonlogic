@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Callable, cast
+from typing import Any, Callable, Dict, List, Type, cast
 
-from jsonlogic._compat import NoneType, TypeIs
+from jsonlogic._compat import NoneType
 from jsonlogic.typing import JSON, JSONLogicPrimitive
 
 from .types import (
@@ -25,33 +25,33 @@ __all__ = (
     "from_value",
 )
 
-_VALUE_TYPE_MAP: dict[type[Any], type[JSONSchemaType]] = {
+_VALUE_TYPE_MAP: Dict[Type[Any], Type[JSONSchemaType]] = {
     bool: BooleanType,
     float: NumberType,
     int: IntegerType,
     NoneType: NullType,
 }
 
-_PRIMITIVES_TYPE_MAP: dict[str, type[JSONSchemaType]] = {
+_PRIMITIVES_TYPE_MAP: Dict[str, Type[JSONSchemaType]] = {
     "boolean": BooleanType,
     "number": NumberType,
     "integer": IntegerType,
     "null": NullType,
 }
 
-_R_PRIMITIVES_TYPE_MAP: dict[type[JSONSchemaType], str] = {
+_R_PRIMITIVES_TYPE_MAP: Dict[Type[JSONSchemaType], str] = {
     **{v: k for k, v in _PRIMITIVES_TYPE_MAP.items()},
     StringType: "string",
 }
 
 
 # Defined purely for type checking purposes:
-def _is_primitive_not_str(value: object) -> TypeIs[bool | float | None]:
+def _is_primitive_not_str(value: object) -> bool:
     return type(value) in _VALUE_TYPE_MAP
 
 
 def from_value(
-    value: JSONLogicPrimitive, literal_casts: dict[Callable[[str], Any], type[JSONSchemaType]]
+    value: JSONLogicPrimitive, literal_casts: Dict[Callable[[str], Any], Type[JSONSchemaType]]
 ) -> JSONSchemaType:
     if isinstance(value, str):
         for func, js_type in literal_casts.items():
@@ -76,15 +76,15 @@ def from_value(
     return ArrayType(AnyType())
 
 
-def from_json_schema(json_schema: dict[str, Any], variable_casts: dict[str, type[JSONSchemaType]]) -> JSONSchemaType:
-    js_types = cast("list[str] | str | None", json_schema.get("type"))
+def from_json_schema(json_schema: Dict[str, Any], variable_casts: Dict[str, Type[JSONSchemaType]]) -> JSONSchemaType:
+    js_types = cast("List[str] | str | None", json_schema.get("type"))
     if js_types is None:
         return AnyType()
 
     if not isinstance(js_types, list):
         js_types = [js_types]
 
-    def _from_type(js_type: str, json_schema: dict[str, Any]) -> JSONSchemaType:
+    def _from_type(js_type: str, json_schema: Dict[str, Any]) -> JSONSchemaType:
         if js_type in _PRIMITIVES_TYPE_MAP:
             return _PRIMITIVES_TYPE_MAP[js_type]()
 
@@ -96,11 +96,11 @@ def from_json_schema(json_schema: dict[str, Any], variable_casts: dict[str, type
             return StringType()
 
         if js_type == "array":
-            items_type = cast("dict[str, Any] | None", json_schema.get("items"))
+            items_type = cast("Dict[str, Any] | None", json_schema.get("items"))
             if items_type is not None:
                 return ArrayType(from_json_schema(items_type, variable_casts))
 
-            prefix_items = cast("list[dict[str, Any]] | None", json_schema.get("prefixItems"))
+            prefix_items = cast("List[Dict[str, Any]] | None", json_schema.get("prefixItems"))
             min_items = cast("int | None", json_schema.get("minItems"))
             max_items = cast("int | None", json_schema.get("maxItems"))
             if prefix_items is not None and min_items is not None and min_items == max_items:
@@ -113,7 +113,7 @@ def from_json_schema(json_schema: dict[str, Any], variable_casts: dict[str, type
     return UnionType(*(_from_type(js_type, json_schema) for js_type in js_types))
 
 
-def as_json_schema(type: JSONSchemaType, variable_casts: dict[str, type[JSONSchemaType]]) -> dict[str, Any]:
+def as_json_schema(type: JSONSchemaType, variable_casts: Dict[str, Type[JSONSchemaType]]) -> Dict[str, Any]:
     type_class = type.__class__
     if type_class in _R_PRIMITIVES_TYPE_MAP:
         return {"type": _R_PRIMITIVES_TYPE_MAP[type_class]}
@@ -156,8 +156,8 @@ def as_json_schema(type: JSONSchemaType, variable_casts: dict[str, type[JSONSche
     raise RuntimeError(f"Unable to determine JSON Schema for type {type}")
 
 
-def cast_from_schema(value: JSON, json_schema: dict[str, Any], variable_casts: dict[str, Callable[[str], Any]]) -> Any:
-    js_types = cast("list[str] | str | None", json_schema.get("type"))
+def cast_from_schema(value: JSON, json_schema: Dict[str, Any], variable_casts: Dict[str, Callable[[str], Any]]) -> Any:
+    js_types = cast("List[str] | str | None", json_schema.get("type"))
     if js_types is None:
         return value
 
@@ -172,11 +172,11 @@ def cast_from_schema(value: JSON, json_schema: dict[str, Any], variable_casts: d
         return cast_func(value)
 
     if isinstance(value, list) and "array" in js_types:
-        items_type = cast("dict[str, Any] | None", json_schema.get("items"))
+        items_type = cast("Dict[str, Any] | None", json_schema.get("items"))
         if items_type is not None:
             return [cast_from_schema(val, items_type, variable_casts) for val in value]
 
-        prefix_items = cast("list[dict[str, Any]] | None", json_schema.get("prefixItems"))
+        prefix_items = cast("List[Dict[str, Any]] | None", json_schema.get("prefixItems"))
         if prefix_items is not None:  # TODO check for min/maxItems?
             # TODO return a tuple instead? Needs decision
             return [cast_from_schema(val, item_type, variable_casts) for val, item_type in zip(value, prefix_items)]

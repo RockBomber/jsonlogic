@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import get_args
+from typing import List, Tuple, get_args
 
 import pytest
 
@@ -25,8 +25,8 @@ from jsonlogic.json_schema.types import (
     unpack_union,
 )
 
-BINARY_OPS: tuple[BinaryOp, ...] = get_args(BinaryOp)
-UNARY_OPS: tuple[UnaryOp, ...] = get_args(UnaryOp)
+BINARY_OPS: Tuple[BinaryOp, ...] = get_args(BinaryOp)
+UNARY_OPS: Tuple[UnaryOp, ...] = get_args(UnaryOp)
 
 
 def test_any_type() -> None:
@@ -260,7 +260,7 @@ def test_types_or_op():
 
 
 def test_unpack_union():
-    called_types: list[JSONSchemaType] = []
+    called_types: List[JSONSchemaType] = []
 
     class MyType(JSONSchemaPrimitiveType):
         @property

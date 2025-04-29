@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Callable, NoReturn
+from typing import Any, Callable, Dict, NoReturn, Type
 
 import pytest
 
@@ -47,7 +47,7 @@ class _Unknown:
     ],
 )
 def test_from_value(
-    value: JSONLogicPrimitive, literal_casts: dict[Callable[[str], Any], type[JSONSchemaType]], expected: JSONSchemaType
+    value: JSONLogicPrimitive, literal_casts: Dict[Callable[[str], Any], Type[JSONSchemaType]], expected: JSONSchemaType
 ) -> None:
     assert from_value(value, literal_casts) == expected
 
@@ -98,7 +98,7 @@ These are the cases where `from_json_schema(as_json_schema(typ))` acts as the id
     ],
 )
 def test_from_json_schema(
-    json_schema: dict[str, Any], variable_casts: dict[str, type[JSONSchemaType]], expected: JSONSchemaType
+    json_schema: Dict[str, Any], variable_casts: Dict[str, Type[JSONSchemaType]], expected: JSONSchemaType
 ) -> None:
     assert from_json_schema(json_schema, variable_casts) == expected
 
@@ -108,7 +108,7 @@ def test_from_json_schema(
     [(param[2], param[1], param[0]) for param in json_schema_params],  # Arguments order is reversed
 )
 def test_as_json_schema(
-    type: JSONSchemaType, variable_casts: dict[str, type[JSONSchemaType]], expected: dict[str, Any]
+    type: JSONSchemaType, variable_casts: Dict[str, Type[JSONSchemaType]], expected: Dict[str, Any]
 ) -> None:
     assert as_json_schema(type, variable_casts) == expected
 
@@ -145,6 +145,6 @@ def test_as_json_schema(
     ],
 )
 def test_cast_from_schema(
-    value: JSON, json_schema: dict[str, Any], variable_casts: dict[str, Callable[[str], Any]], expected: Any
+    value: JSON, json_schema: Dict[str, Any], variable_casts: Dict[str, Callable[[str], Any]], expected: Any
 ) -> None:
     assert cast_from_schema(value, json_schema, variable_casts) == expected

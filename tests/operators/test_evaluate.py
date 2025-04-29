@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Any, cast
+from typing import Any, Dict, List, cast
 
 import pytest
 
@@ -21,7 +21,7 @@ class ReturnsOp(Operator):
     return_value: Any
 
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         assert len(arguments) == 1
         return cls(
             operator=operator,
@@ -35,7 +35,7 @@ class ReturnsOp(Operator):
 operator_registry = base_operator_registry.copy(extend={"returns": ReturnsOp})
 
 
-def as_op(json_logic: dict[str, Any]) -> Operator:
+def as_op(json_logic: Dict[str, Any]) -> Operator:
     expr = JSONLogicExpression.from_json(json_logic)
     return cast(Operator, expr.as_operator_tree(operator_registry))
 

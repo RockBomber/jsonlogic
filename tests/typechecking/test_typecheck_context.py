@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List
+
 from jsonlogic._compat import Self
 from jsonlogic.core import Operator
 from jsonlogic.evaluation.evaluation_context import EvaluationContext
@@ -9,7 +11,7 @@ from jsonlogic.typing import OperatorArgument
 
 class DummyOp(Operator):
     @classmethod
-    def from_expression(cls, operator: str, arguments: list[OperatorArgument]) -> Self:
+    def from_expression(cls, operator: str, arguments: List[OperatorArgument]) -> Self:
         return cls(operator)
 
     def evaluate(self, context: EvaluationContext) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 from jsonlogic.core import Operator
 from jsonlogic.json_schema import from_value
@@ -13,8 +13,8 @@ from .typecheck_settings import TypecheckSettingsDict
 
 
 def typecheck(
-    operator: Operator, data_schema: dict[str, Any], settings: TypecheckSettingsDict | None = None
-) -> tuple[JSONSchemaType, list[Diagnostic]]:
+    operator: Operator, data_schema: Dict[str, Any], settings: TypecheckSettingsDict | None = None
+) -> Tuple[JSONSchemaType, List[Diagnostic]]:
     """Helper function to typecheck an :class:`~jsonlogic.core.Operator`.
 
     Args:

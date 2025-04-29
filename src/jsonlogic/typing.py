@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
 from ._compat import TypeAlias
 
@@ -12,11 +12,11 @@ if TYPE_CHECKING:
 JSONPrimitive: TypeAlias = "str | int | float | bool | None"
 """A JSON Primitive."""
 
-JSONObject: TypeAlias = "dict[str, JSON]"
-JSONArray: TypeAlias = "list[JSON]"
+JSONObject: TypeAlias = "Dict[str, JSON]"
+JSONArray: TypeAlias = "List[JSON]"
 JSON: TypeAlias = "JSONPrimitive | JSONArray | JSONObject"
 
-JSONLogicPrimitive: TypeAlias = "JSONPrimitive | list[JSONLogicPrimitive]"
+JSONLogicPrimitive: TypeAlias = "JSONPrimitive | List[JSONLogicPrimitive]"
 """A JSON Logic primitive is recursively defined either as a JSON primitive or a list of JSON Logic primitives.
 
 Such primitives are only considered when dealing with operator arguments:
@@ -32,7 +32,7 @@ Such primitives are only considered when dealing with operator arguments:
     }
 """
 
-OperatorArgument: TypeAlias = "Operator | JSONLogicPrimitive | list[OperatorArgument]"
+OperatorArgument: TypeAlias = "Operator | JSONLogicPrimitive | List[OperatorArgument]"
 """An operator argument is recursively defined either as a JSON Logic primitive, an operator or a list of
 operator arguments.
 

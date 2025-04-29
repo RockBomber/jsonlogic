@@ -3,9 +3,10 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
+from ._compat import Protocol
 from .typing import JSON
 
 
@@ -14,14 +15,14 @@ class ParsedReference:
     reference: str
     """The original string representation of the reference."""
 
-    segments: list[str]
+    segments: List[str]
     """The parsed reference, as a list of string bits."""
 
 
 class Unresolvable(Exception):
     """A reference is unresolvable."""
 
-    def __init__(self, parsed_reference: ParsedReference, /) -> None:
+    def __init__(self, parsed_reference: ParsedReference) -> None:
         self.parsed_reference = parsed_reference
 
 
@@ -31,7 +32,7 @@ _scope_specifier_re = re.compile(r"@(\d+)")
 class ReferenceParser(Protocol):
     """A callback protocol used to parse a string reference."""
 
-    def __call__(self, reference: str) -> tuple[ParsedReference, int]: ...
+    def __call__(self, reference: str) -> Tuple[ParsedReference, int]: ...
 
 
 class BaseReferenceParser(ABC, ReferenceParser):
@@ -48,7 +49,7 @@ class BaseReferenceParser(ABC, ReferenceParser):
     The actual segment parsing logic is implemented by subclasses.
     """
 
-    def parse_scope(self, reference: str) -> tuple[str, int]:
+    def parse_scope(self, reference: str) -> Tuple[str, int]:
         scope_search = _scope_specifier_re.search(reference)
         if scope_search is not None:
             scope_ref = int(scope_search.group(1))
@@ -59,7 +60,7 @@ class BaseReferenceParser(ABC, ReferenceParser):
         return reference, scope_ref
 
     @abstractmethod
-    def __call__(self, reference: str) -> tuple[ParsedReference, int]:
+    def __call__(self, reference: str) -> Tuple[ParsedReference, int]:
         pass
 
 
@@ -87,7 +88,7 @@ class DotReferenceParser(BaseReferenceParser):
     .. _`reference format`: https://jsonlogic.com/operations.html#var
     """
 
-    def __call__(self, reference: str) -> tuple[ParsedReference, int]:
+    def __call__(self, reference: str) -> Tuple[ParsedReference, int]:
         reference, scope = self.parse_scope(reference)
 
         return ParsedReference(reference, [] if reference == "" else reference.split(".")), scope
@@ -96,7 +97,7 @@ class DotReferenceParser(BaseReferenceParser):
 class PointerReferenceParser(BaseReferenceParser):
     """A reference parser able to parse JSON Pointer references, as specified by :rfc:`6901`."""
 
-    def __call__(self, reference: str) -> tuple[ParsedReference, int]:
+    def __call__(self, reference: str) -> Tuple[ParsedReference, int]:
         reference, scope = self.parse_scope(reference)
         if reference == "":
             segments = []
@@ -109,7 +110,7 @@ class PointerReferenceParser(BaseReferenceParser):
         return ParsedReference(reference, segments), scope
 
 
-def resolve_json_schema(parsed_reference: ParsedReference, schema: dict[str, Any]) -> dict[str, Any]:
+def resolve_json_schema(parsed_reference: ParsedReference, schema: Dict[str, Any]) -> Dict[str, Any]:
     """Resolve the (sub) JSON Schema by looking up by the parsed reference.
 
     Args:
